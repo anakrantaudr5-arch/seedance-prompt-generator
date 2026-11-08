@@ -7,3 +7,8 @@
 .photoPreview{display:flex;align-items:center;gap:12px;margin-top:5px}
 .photoPreview img{width:76px;height:76px;object-fit:cover;border-radius:5px;border:1px solid #596044}
 .photoPreview button{font-size:11px}
+
+.analyzeBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:10px 12px;border:1px solid #87945a;border-radius:4px;background:#c7d18b;color:#1a1c13;font:600 11px 'DM Sans';cursor:pointer}
+.analyzeBtn:hover{background:#d6dfa0}
+.analyzeBtn:disabled{opacity:.6;cursor:wait}
+.analysisError{color:#e6a09a!important;font-size:10px!important;line-height:1.5}
