@@ -65,12 +65,40 @@ export default function App() {
 
   const prompt = useMemo(() => {
     const characterText = characters.map(c =>
-      `CHARACTER: ${c.name}\nAppearance/continuity: ${c.look}\nVisual reference: ${c.photo ? 'A reference photo is selected in the app. Use it as the primary visual guide for this character; preserve face, hair, clothing, and distinctive features consistently across every scene.' : 'No reference photo selected; follow the written appearance description.'}\nVoice: ${c.voice}; language: ${c.language}; accent: ${c.accent}\nEmotion: ${c.emotion}; delivery: ${c.delivery}; pace: ${c.pace}\nDialogue (${c.start}–${c.end}): "${c.dialogue || '[dialogue not set]'}"`
-    ).join('\n\n')
+      `CHARACTER: ${c.name}
+Appearance/continuity: ${c.look}
+Visual reference: ${c.photo ? 'A reference photo is selected in the app. Use it as the primary visual guide for this character; preserve face, hair, clothing, and distinctive features consistently across every scene.' : 'No reference photo selected; follow the written appearance description.'}
+Voice: ${c.voice}; language: ${c.language}; accent: ${c.accent}
+Emotion: ${c.emotion}; delivery: ${c.delivery}; pace: ${c.pace}
+Dialogue (${c.start}–${c.end}): "${c.dialogue || '[dialogue not set]'}"`
+    ).join('
+
+')
     const sceneText = scenes.map((s,i) =>
-      `SCENE ${i+1} — ${s.title} (${s.duration})\nVisual: ${s.visual}\nAction: ${s.action}\nCamera: ${s.camera}`
-    ).join('\n\n')
-    return `${project.toUpperCase()}\nFormat: ${ratio} | Genre: ${genre} | Visual style: ${style}\n\nCHARACTER CONTINUITY\n${characterText}\n\nSTORYBOARD\n${sceneText}\n\nDIALOGUE & LIP-SYNC DIRECTION\nEach character speaks only during their assigned time window. Match mouth movement to the exact spoken words. Preserve natural facial expressions and speaking rhythm. Do not overlap dialogue unless explicitly requested. Keep each character's voice description and appearance consistent across scenes.\n\nGLOBAL VISUAL DIRECTION\n${extra}\n\nNEGATIVE PROMPT\n${negative}`
+      `SCENE ${i+1} — ${s.title} (${s.duration})
+Visual: ${s.visual}
+Action: ${s.action}
+Camera: ${s.camera}`
+    ).join('
+
+')
+    return `${project.toUpperCase()}
+Format: ${ratio} | Genre: ${genre} | Visual style: ${style}
+
+CHARACTER CONTINUITY
+${characterText}
+
+STORYBOARD
+${sceneText}
+
+DIALOGUE & LIP-SYNC DIRECTION
+Each character speaks only during their assigned time window. Match mouth movement to the exact spoken words. Preserve natural facial expressions and speaking rhythm. Do not overlap dialogue unless explicitly requested. Keep each character's voice description and appearance consistent across scenes.
+
+GLOBAL VISUAL DIRECTION
+${extra}
+
+NEGATIVE PROMPT
+${negative}`
   }, [project, style, ratio, genre, scenes, characters, negative, extra])
 
   async function copyPrompt() {
