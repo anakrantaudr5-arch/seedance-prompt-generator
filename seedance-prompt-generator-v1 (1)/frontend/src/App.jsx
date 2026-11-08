@@ -1,6 +1,25 @@
 import React, { useMemo, useState } from 'react'
 import { Copy, Film, Plus, Trash2, WandSparkles, Clapperboard, MessageSquareText } from 'lucide-react'
 
+async function compressCharacterImage(file) {
+  const bitmap = await createImageBitmap(file);
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+  let quality = 0.82;
+  let dataUrl = canvas.toDataURL('image/jpeg', quality);
+  while (dataUrl.length > 3_800_000 && quality > 0.45) {
+    quality -= 0.08;
+    dataUrl = canvas.toDataURL('image/jpeg', quality);
+  }
+  if (dataUrl.length > 3_800_000) throw new Error('Foto terlalu besar setelah dikompres. Coba foto lain.');
+  return dataUrl;
+}
+
 const blankScene = () => ({ title: 'Scene baru', duration: '5 detik', visual: '', camera: 'Slow dolly in', action: '' })
 const blankCharacter = () => ({ name: 'Karakter 1', look: '', photo: '', voice: 'Suara sedang, natural', language: 'Bahasa Indonesia', accent: 'Netral', emotion: 'Tenang', delivery: 'Natural, jelas', pace: 'Sedang', dialogue: '', start: '00:00', end: '00:05' })
 
@@ -13,7 +32,31 @@ export default function App() {
   const [characters, setCharacters] = useState([{...blankCharacter(), name:'Alya', look:'Perempuan muda, rambut hitam sebahu, jaket krem.'}])
   const [negative, setNegative] = useState('low quality, blurry, distorted face, extra fingers, inconsistent character, subtitles, watermark')
   const [extra, setExtra] = useState('Natural motion, realistic physics, consistent lighting, detailed environment')
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false)\n  const [analyzingIndex, setAnalyzingIndex] = useState(null)\n  const [analysisErrors, setAnalysisErrors] = useState({})
+
+  async function analyzeCharacter(i) {
+    const character = characters[i];
+    if (!character?.photo) {
+      setAnalysisErrors(old => ({...old, [i]: 'Unggah foto karakter terlebih dahulu.'}));
+      return;
+    }
+    setAnalyzingIndex(i);
+    setAnalysisErrors(old => ({...old, [i]: ''}));
+    try {
+      const response = await fetch('/api/analyze-character', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({image: character.photo})
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Analisis gagal. Coba lagi.');
+      updateCharacter(i, 'look', data.description);
+    } catch (error) {
+      setAnalysisErrors(old => ({...old, [i]: error.message || 'Terjadi kesalahan saat menganalisis foto.'}));
+    } finally {
+      setAnalyzingIndex(null);
+    }
+  }
 
   const updateScene = (i, key, value) => setScenes(old => old.map((s,n) => n===i ? {...s,[key]:value} : s))
   const updateCharacter = (i, key, value) => setCharacters(old => old.map((c,n) => n===i ? {...c,[key]:value} : c))
@@ -53,9 +96,11 @@ export default function App() {
             <label>Nama karakter<input value={c.name} onChange={e=>updateCharacter(i,'name',e.target.value)}/></label>
             <label>Deskripsi penampilan<input value={c.look} placeholder="Ciri fisik, pakaian, aksesori..." onChange={e=>updateCharacter(i,'look',e.target.value)}/></label>
             <label className="photoUpload">Foto referensi karakter
-              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>8*1024*1024){alert('Ukuran foto maksimal 8 MB.');e.target.value='';return;}const reader=new FileReader();reader.onload=()=>updateCharacter(i,'photo',reader.result);reader.readAsDataURL(file)}}/>
+              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={async e=>{const file=e.target.files?.[0];if(!file)return;if(!['image/png','image/jpeg','image/webp'].includes(file.type)){alert('Gunakan foto JPG, PNG, atau WEBP.');e.target.value='';return;}if(file.size>8*1024*1024){alert('Ukuran foto maksimal 8 MB.');e.target.value='';return;}try{const dataUrl=await compressCharacterImage(file);updateCharacter(i,'photo',dataUrl);setAnalysisErrors(old=>({...old,[i]:''}));}catch(error){alert(error.message);e.target.value='';}}}/>
               <small>JPG, PNG, atau WEBP · Maksimal 8 MB</small>
               {c.photo&&<span className="photoPreview"><img src={c.photo} alt={`Referensi ${c.name}`}/><button type="button" className="iconBtn" onClick={()=>updateCharacter(i,'photo','')}>Hapus foto</button></span>}
+              {c.photo&&<button type="button" className="analyzeBtn" disabled={analyzingIndex===i} onClick={()=>analyzeCharacter(i)}>{analyzingIndex===i?'Menganalisis foto...':'✦ Analisis Karakter'}</button>}
+              {analysisErrors[i]&&<small className="analysisError">{analysisErrors[i]}</small>}
             </label>
             <label>Karakter suara<input value={c.voice} onChange={e=>updateCharacter(i,'voice',e.target.value)}/></label>
             <label>Bahasa<select value={c.language} onChange={e=>updateCharacter(i,'language',e.target.value)}>{['Bahasa Indonesia','English','日本語','한국어','中文','Español','Other'].map(x=><option>{x}</option>)}</select></label>
