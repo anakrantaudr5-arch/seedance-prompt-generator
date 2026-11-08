@@ -90,3 +90,4 @@ export default function App() {
     </div>
     <footer>SEEDANCE PROMPT STUDIO <span>Open-source starter · MIT License</span></footer>
   </main>
+}
