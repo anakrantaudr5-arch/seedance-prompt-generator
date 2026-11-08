@@ -77,9 +77,7 @@ Dialogue (${c.start}–${c.end}): "${c.dialogue || '[dialogue not set]'}"`
 Visual: ${s.visual}
 Action: ${s.action}
 Camera: ${s.camera}`
-    ).join('
-
-')
+    ).join('\n\n')
     return `${project.toUpperCase()}
 Format: ${ratio} | Genre: ${genre} | Visual style: ${style}
 
