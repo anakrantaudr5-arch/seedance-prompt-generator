@@ -32,7 +32,9 @@ export default function App() {
   const [characters, setCharacters] = useState([{...blankCharacter(), name:'Alya', look:'Perempuan muda, rambut hitam sebahu, jaket krem.'}])
   const [negative, setNegative] = useState('low quality, blurry, distorted face, extra fingers, inconsistent character, subtitles, watermark')
   const [extra, setExtra] = useState('Natural motion, realistic physics, consistent lighting, detailed environment')
-  const [copied, setCopied] = useState(false)\n  const [analyzingIndex, setAnalyzingIndex] = useState(null)\n  const [analysisErrors, setAnalysisErrors] = useState({})
+  const [copied, setCopied] = useState(false)
+  const [analyzingIndex, setAnalyzingIndex] = useState(null)
+  const [analysisErrors, setAnalysisErrors] = useState({})
 
   async function analyzeCharacter(i) {
     const character = characters[i];
