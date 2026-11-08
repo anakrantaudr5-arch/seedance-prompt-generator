@@ -71,9 +71,7 @@ Visual reference: ${c.photo ? 'A reference photo is selected in the app. Use it 
 Voice: ${c.voice}; language: ${c.language}; accent: ${c.accent}
 Emotion: ${c.emotion}; delivery: ${c.delivery}; pace: ${c.pace}
 Dialogue (${c.start}–${c.end}): "${c.dialogue || '[dialogue not set]'}"`
-    ).join('
-
-')
+    ).join('\n\n')
     const sceneText = scenes.map((s,i) =>
       `SCENE ${i+1} — ${s.title} (${s.duration})
 Visual: ${s.visual}
