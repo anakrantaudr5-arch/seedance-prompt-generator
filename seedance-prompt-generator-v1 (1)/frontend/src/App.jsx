@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Copy, Film, Plus, Trash2, WandSparkles, Clapperboard, MessageSquareText } from 'lucide-react'
 
 const blankScene = () => ({ title: 'Scene baru', duration: '5 detik', visual: '', camera: 'Slow dolly in', action: '' })
-const blankCharacter = () => ({ name: 'Karakter 1', look: '', voice: 'Suara sedang, natural', language: 'Bahasa Indonesia', accent: 'Netral', emotion: 'Tenang', delivery: 'Natural, jelas', pace: 'Sedang', dialogue: '', start: '00:00', end: '00:05' })
+const blankCharacter = () => ({ name: 'Karakter 1', look: '', photo: '', voice: 'Suara sedang, natural', language: 'Bahasa Indonesia', accent: 'Netral', emotion: 'Tenang', delivery: 'Natural, jelas', pace: 'Sedang', dialogue: '', start: '00:00', end: '00:05' })
 
 export default function App() {
   const [project, setProject] = useState('Film pendek')
@@ -20,7 +20,7 @@ export default function App() {
 
   const prompt = useMemo(() => {
     const characterText = characters.map(c =>
-      `CHARACTER: ${c.name}\nAppearance/continuity: ${c.look}\nVoice: ${c.voice}; language: ${c.language}; accent: ${c.accent}\nEmotion: ${c.emotion}; delivery: ${c.delivery}; pace: ${c.pace}\nDialogue (${c.start}–${c.end}): "${c.dialogue || '[dialogue not set]'}"`
+      `CHARACTER: ${c.name}\nAppearance/continuity: ${c.look}\nVisual reference: ${c.photo ? 'A reference photo is selected in the app. Use it as the primary visual guide for this character; preserve face, hair, clothing, and distinctive features consistently across every scene.' : 'No reference photo selected; follow the written appearance description.'}\nVoice: ${c.voice}; language: ${c.language}; accent: ${c.accent}\nEmotion: ${c.emotion}; delivery: ${c.delivery}; pace: ${c.pace}\nDialogue (${c.start}–${c.end}): "${c.dialogue || '[dialogue not set]'}"`
     ).join('\n\n')
     const sceneText = scenes.map((s,i) =>
       `SCENE ${i+1} — ${s.title} (${s.duration})\nVisual: ${s.visual}\nAction: ${s.action}\nCamera: ${s.camera}`
@@ -52,6 +52,11 @@ export default function App() {
           <div className="fields two">
             <label>Nama karakter<input value={c.name} onChange={e=>updateCharacter(i,'name',e.target.value)}/></label>
             <label>Deskripsi penampilan<input value={c.look} placeholder="Ciri fisik, pakaian, aksesori..." onChange={e=>updateCharacter(i,'look',e.target.value)}/></label>
+            <label className="photoUpload">Foto referensi karakter
+              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>8*1024*1024){alert('Ukuran foto maksimal 8 MB.');e.target.value='';return;}const reader=new FileReader();reader.onload=()=>updateCharacter(i,'photo',reader.result);reader.readAsDataURL(file)}}/>
+              <small>JPG, PNG, atau WEBP · Maksimal 8 MB</small>
+              {c.photo&&<span className="photoPreview"><img src={c.photo} alt={`Referensi ${c.name}`}/><button type="button" className="iconBtn" onClick={()=>updateCharacter(i,'photo','')}>Hapus foto</button></span>}
+            </label>
             <label>Karakter suara<input value={c.voice} onChange={e=>updateCharacter(i,'voice',e.target.value)}/></label>
             <label>Bahasa<select value={c.language} onChange={e=>updateCharacter(i,'language',e.target.value)}>{['Bahasa Indonesia','English','日本語','한국어','中文','Español','Other'].map(x=><option>{x}</option>)}</select></label>
             <label>Aksen<input value={c.accent} onChange={e=>updateCharacter(i,'accent',e.target.value)}/></label>
